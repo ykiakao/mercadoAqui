@@ -1,4 +1,4 @@
-import { View, Text, Button, StyleSheet, Alert, Modal, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet, Modal, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -8,28 +8,13 @@ export default function Perfil() {
   const { setIsLoggedIn } = useAuth();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [nome, setNome] = useState('Kaiky Oliveira');
+  const [modalSairVisible, setModalSairVisible] = useState(false);
+  const [modalExcluirVisible, setModalExcluirVisible] = useState(false);
+
+  const [nome, setNome] = useState('Admin Mercado');
   const [email, setEmail] = useState('admin@mercado.com');
   const [editNome, setEditNome] = useState(nome);
   const [editEmail, setEditEmail] = useState(email);
-
-  const handleLogout = () => {
-    Alert.alert(
-      "Sair da conta",
-      "Tem certeza que deseja sair?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Sair",
-          style: "destructive",
-          onPress: () => {
-            setIsLoggedIn(false);
-            router.replace('/auth/login');
-          },
-        }
-      ]
-    );
-  };
 
   const salvarEdicao = () => {
     if (!editNome.trim() || !editEmail.trim()) {
@@ -46,12 +31,19 @@ export default function Perfil() {
     <View style={styles.container}>
       <Text style={styles.title}>Meu Perfil</Text>
 
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{nome.charAt(0).toUpperCase()}</Text>
+      </View>
+
       <View style={styles.infoBox}>
         <Text style={styles.label}>Nome:</Text>
         <Text style={styles.value}>{nome}</Text>
 
         <Text style={styles.label}>Email:</Text>
         <Text style={styles.value}>{email}</Text>
+
+        <Text style={styles.label}>Comparações realizadas:</Text>
+        <Text style={styles.value}>12</Text>
       </View>
 
       <View style={styles.button}>
@@ -59,16 +51,15 @@ export default function Perfil() {
       </View>
 
       <View style={styles.button}>
-        <Button title="Sair" color="#d32f2f" onPress={handleLogout} />
+        <Button title="Sair" color="#d32f2f" onPress={() => setModalSairVisible(true)} />
       </View>
 
-      {/* Modal */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
+      <View style={styles.button}>
+        <Button title="Excluir Conta" color="#555" onPress={() => setModalExcluirVisible(true)} />
+      </View>
+
+      {/* Modal Editar Perfil */}
+      <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Editar Perfil</Text>
@@ -98,6 +89,59 @@ export default function Perfil() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal Sair */}
+      <Modal visible={modalSairVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Deseja sair?</Text>
+            <Text style={{ textAlign: 'center', marginBottom: 20 }}>Você será desconectado da sua conta.</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalSairVisible(false)}>
+                <Text style={styles.cancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.saveBtn}
+                onPress={() => {
+                  setModalSairVisible(false);
+                  setIsLoggedIn(false);
+                  router.replace('/auth/login');
+                }}
+              >
+                <Text style={styles.saveText}>Sair</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Excluir Conta */}
+      <Modal visible={modalExcluirVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Excluir Conta</Text>
+            <Text style={{ textAlign: 'center', marginBottom: 20 }}>
+              Tem certeza que deseja excluir sua conta? Essa ação não poderá ser desfeita.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalExcluirVisible(false)}>
+                <Text style={styles.cancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.saveBtn, { backgroundColor: '#d32f2f' }]}
+                onPress={() => {
+                  setModalExcluirVisible(false);
+                  Alert.alert("Conta excluída", "Sua conta foi excluída com sucesso.");
+                  setIsLoggedIn(false);
+                  router.replace('/auth/login');
+                }}
+              >
+                <Text style={styles.saveText}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -105,6 +149,17 @@ export default function Perfil() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white', padding: 24 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 24, color: '#007BFF', textAlign: 'center' },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#007BFF',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  avatarText: { color: 'white', fontSize: 32, fontWeight: 'bold' },
   infoBox: {
     backgroundColor: '#f5f5f5',
     padding: 16,
@@ -115,7 +170,6 @@ const styles = StyleSheet.create({
   value: { fontSize: 16, marginBottom: 8 },
   button: { marginBottom: 16 },
 
-  // Modal
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',

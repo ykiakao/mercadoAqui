@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
 export default function Cesta() {
   const cestas = [
@@ -35,29 +35,48 @@ export default function Cesta() {
   ];
 
   const calcularTotal = (produtos) =>
-    produtos.reduce((soma, item) => soma + item.preco, 0).toFixed(2);
+    produtos.reduce((soma, item) => soma + item.preco, 0);
 
-  const renderCesta = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.mercado}>{item.mercado}</Text>
-      <Text style={styles.total}>Total: R$ {calcularTotal(item.produtos)}</Text>
-      <View style={styles.produtosBox}>
-        {item.produtos.map((produto, index) => (
-          <View key={index} style={styles.produtoRow}>
-            <Text style={styles.produtoNome}>{produto.nome}</Text>
-            <Text style={styles.produtoPreco}>R$ {produto.preco.toFixed(2)}</Text>
-          </View>
-        ))}
+  const menorTotal = Math.min(...cestas.map(c => calcularTotal(c.produtos)));
+
+  const renderCesta = ({ item }) => {
+    const total = calcularTotal(item.produtos);
+    const isMaisBarata = total === menorTotal;
+
+    return (
+      <View style={[styles.card, isMaisBarata && styles.cardDestaque]}>
+        <View style={styles.headerRow}>
+          <Text style={styles.mercado}>{item.mercado}</Text>
+          {isMaisBarata && <Text style={styles.selo}>Mais Barata</Text>}
+        </View>
+
+        <Text style={styles.total}>Total: R$ {total.toFixed(2)}</Text>
+
+        <View style={styles.produtosBox}>
+          {item.produtos.map((produto, index) => (
+            <View key={index} style={styles.produtoRow}>
+              <Text style={styles.produtoNome}>{produto.nome}</Text>
+              <Text style={styles.produtoPreco}>R$ {produto.preco.toFixed(2)}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.data}>Atualizado em: {item.data}</Text>
+
+        <View style={styles.botoesBox}>
+          <TouchableOpacity style={styles.botao}>
+            <Text style={styles.botaoTexto}>Ver rota</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <Text style={styles.data}>Atualizado em: {item.data}</Text>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Comparativo de Cestas Básicas</Text>
       <FlatList
-        data={cestas}
+        data={[...cestas].sort((a, b) => calcularTotal(a.produtos) - calcularTotal(b.produtos))}
         keyExtractor={(item) => item.id}
         renderItem={renderCesta}
         contentContainerStyle={{ paddingBottom: 24 }}
@@ -77,11 +96,42 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: '#f9f9f9'
   },
+  cardDestaque: {
+    borderColor: '#28a745',
+    backgroundColor: '#eafff1'
+  },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  selo: {
+    backgroundColor: '#28a745',
+    color: 'white',
+    fontSize: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
   mercado: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   total: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#007BFF' },
   produtosBox: { marginBottom: 8 },
   produtoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
   produtoNome: { fontSize: 14 },
   produtoPreco: { fontSize: 14, fontWeight: '600' },
-  data: { fontSize: 12, color: '#666', textAlign: 'right' }
+  data: { fontSize: 12, color: '#666', textAlign: 'right', marginTop: 8 },
+  botoesBox: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
+  botao: {
+    backgroundColor: '#007BFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8
+  },
+  botaoSec: {
+    backgroundColor: '#444',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8
+  },
+  botaoTexto: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold'
+  }
 });
