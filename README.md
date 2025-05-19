@@ -39,7 +39,7 @@ app/
 
 ### 1. Clonar o repositório
 
-git clone https://github.com/seu-usuario/mercadoAqui.git
+git clone https://github.com/ykiakao/mercadoAqui.git
 cd mercadoAqui
 
 ### 2. Instalar as dependências
